@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>S2S Vocabulary CMS</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: auto;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      button {
+        padding: 10px 15px;
+        cursor: pointer;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .active {
+        display: block;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+      }
+
+      .card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+      }
+
+      pre {
+        background: #f5f5f5;
+        padding: 15px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>S2S Vocabulary CMS</h1>
+
+    <div class="tabs">
+      <button onclick="openTab('dictionary')">Dictionary</button>
+
+      <button onclick="openTab('add')">Add Vocabulary</button>
+    </div>
+
+    <!-- Dictionary -->
+
+    <div id="dictionary" class="tab-content active">
+      <h2>Vocabulary</h2>
+
+      <div id="dictionaryList">Loading...</div>
+    </div>
+
+    <!-- Add -->
+
+    <div id="add" class="tab-content">
+      <h2>Add Vocabulary</h2>
+
+      <label>Word</label>
+
+      <input id="word" placeholder="interactive" />
+
+      <label>Meaning</label>
+
+      <input id="meaning" placeholder="tương tác" />
+
+      <label>Category</label>
+
+      <select id="category">
+        <option>AI Evaluation</option>
+
+        <option>Audio Quality</option>
+
+        <option>Conversation</option>
+
+        <option>General</option>
+      </select>
+
+      <button onclick="getIPA()">Get IPA</button>
+
+      <label>IPA</label>
+
+      <input id="ipa" />
+
+      <h3>Preview Markdown</h3>
+
+      <pre id="preview"></pre>
+
+      <button onclick="exportMarkdown()">Export vocabulary.md</button>
+    </div>
+
+    <script>
+      // =======================
+      // CONFIG
+      // =======================
+
+      // thay link này bằng GitHub raw của bạn
+
+      const VOCAB_URL =
+        "https://cdn.jsdelivr.net/gh/YOUR_USERNAME/YOUR_REPO/vocabulary.md";
+
+      let markdownData = "";
+
+      let newEntry = {};
+
+      // =======================
+      // TAB
+      // =======================
+
+      function openTab(id) {
+        document.querySelectorAll(".tab-content").forEach((e) => {
+          e.classList.remove("active");
+        });
+
+        document.getElementById(id).classList.add("active");
+      }
+
+      // =======================
+      // LOAD MD
+      // =======================
+
+      async function loadVocabulary() {
+        try {
+          const res = await fetch(VOCAB_URL);
+
+          markdownData = await res.text();
+
+          renderDictionary();
+        } catch (err) {
+          document.getElementById("dictionaryList").innerHTML =
+            "Cannot load vocabulary.md";
+        }
+      }
+
+      // =======================
+      // SIMPLE MD PARSER
+      // =======================
+
+      function renderDictionary() {
+        const box = document.getElementById("dictionaryList");
+
+        const lines = markdownData.split("\n");
+
+        let html = "";
+
+        lines.forEach((line) => {
+          if (line.startsWith("- word:")) {
+            let word = line.replace("- word:", "").trim();
+
+            html += `
+                    <div class="card">
+                      <h3>${word}</h3>
+                    </div>
+                    `;
+          }
+        });
+
+        box.innerHTML = html || "Empty";
+      }
+
+      // =======================
+      // DICTIONARY API
+      // =======================
+
+      async function getIPA() {
+        const word = document.getElementById("word").value.trim();
+
+        if (!word) return;
+
+        try {
+          const res = await fetch(
+            `https://freedictionaryapi.com/api/v1/entries/en/${encodeURIComponent(word)}`,
+          );
+
+          if (!res.ok) {
+            throw new Error("Word not found");
+          }
+
+          const data = await res.json();
+
+          const pronunciations =
+            data.entries
+              ?.flatMap((entry) => entry.pronunciations || [])
+              .filter((p) => p.type === "ipa") || [];
+
+          // Ưu tiên IPA General American
+          const ipa =
+            pronunciations.find((p) => p.tags?.includes("General American"))
+              ?.text ||
+            pronunciations[0]?.text ||
+            "";
+
+          document.getElementById("ipa").value = ipa;
+
+          updatePreview();
+        } catch (e) {
+          document.getElementById("ipa").value = "";
+          alert("Cannot find IPA");
+        }
+      }
+      // =======================
+      // PREVIEW
+      // =======================
+
+      function updatePreview() {
+        const word = document.getElementById("word").value;
+
+        const meaning = document.getElementById("meaning").value;
+
+        const ipa = document.getElementById("ipa").value;
+
+        const category = document.getElementById("category").value;
+
+        document.getElementById("preview").textContent = `
+## ${category}
+
+- word: ${word}
+  meaning: ${meaning}
+  ipa: ${ipa}
+`;
+      }
+
+      document.querySelectorAll("input,select").forEach((el) => {
+        el.addEventListener("input", updatePreview);
+      });
+
+      // =======================
+      // EXPORT
+      // =======================
+
+      function exportMarkdown() {
+        const content =
+          markdownData +
+          "\n\n" +
+          document.getElementById("preview").textContent;
+
+        const blob = new Blob([content], {
+          type: "text/markdown",
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+
+        a.href = url;
+
+        a.download = "vocabulary.md";
+
+        a.click();
+
+        URL.revokeObjectURL(url);
+      }
+
+      loadVocabulary();
+    </script>
+  </body>
+</html>
