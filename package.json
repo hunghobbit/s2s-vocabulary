@@ -1,0 +1,10 @@
+{
+  "name": "s2s-vocabulary",
+  "version": "1.0.0",
+  "description": "Simple vocabulary CMS for the S2S project",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  }
+}
