@@ -1,281 +1,978 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>S2S Vocabulary CMS</title>
+    <head>
+        <meta charset="UTF-8" />
+        <title>S2S Vocabulary CMS</title>
 
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 900px;
-        margin: auto;
-        padding: 20px;
-      }
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
 
-      h1 {
-        text-align: center;
-      }
+            :root {
+                --ink: #182033;
+                --muted: #68728a;
+                --line: #e3e8f2;
+                --canvas: #f4f6fb;
+                --surface: #ffffff;
+                --soft: #eef1ff;
+                --primary: #4057d6;
+                --primary-dark: #3146b9;
+                --success: #198754;
+                --shadow: 0 18px 50px rgba(25, 38, 75, 0.08);
+            }
 
-      .tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
+            * {
+                box-sizing: border-box;
+            }
 
-      button {
-        padding: 10px 15px;
-        cursor: pointer;
-      }
+            body {
+                min-height: 100vh;
+                margin: 0;
+                padding: 48px 24px 72px;
+                background:
+                    radial-gradient(
+                        circle at 5% 3%,
+                        #e8edff 0,
+                        transparent 28rem
+                    ),
+                    radial-gradient(
+                        circle at 96% 18%,
+                        #e5f8f4 0,
+                        transparent 24rem
+                    ),
+                    var(--canvas);
+                color: var(--ink);
+                font-family:
+                    Manrope,
+                    Inter,
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+            }
 
-      .tab-content {
-        display: none;
-      }
+            body::before {
+                content: "S2S / VOCABULARY";
+                position: fixed;
+                top: 22px;
+                left: 28px;
+                color: #8893b4;
+                font-family: "DM Mono", monospace;
+                font-size: 10px;
+                font-weight: 500;
+                letter-spacing: 0.14em;
+                pointer-events: none;
+            }
 
-      .active {
-        display: block;
-      }
+            h1,
+            h2,
+            h3,
+            p {
+                margin-top: 0;
+            }
 
-      input,
-      textarea,
-      select {
-        width: 100%;
-        padding: 10px;
-        margin: 8px 0;
-      }
+            h1 {
+                width: min(1120px, 100%);
+                margin: 20px auto 8px;
+                font-size: clamp(30px, 4vw, 44px);
+                font-weight: 800;
+                letter-spacing: -0.055em;
+                line-height: 1.08;
+            }
 
-      .card {
-        border: 1px solid #ddd;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 8px;
-      }
+            h1::after {
+                content: "Manage your vocabulary library";
+                display: block;
+                margin-top: 10px;
+                color: var(--muted);
+                font-size: 14px;
+                font-weight: 500;
+                letter-spacing: 0;
+            }
 
-      pre {
-        background: #f5f5f5;
-        padding: 15px;
-        white-space: pre-wrap;
-      }
-    </style>
-  </head>
+            h2 {
+                margin-bottom: 22px;
+                font-size: 20px;
+                letter-spacing: -0.03em;
+            }
 
-  <body>
-    <h1>S2S Vocabulary CMS</h1>
+            h3 {
+                margin-bottom: 14px;
+                font-size: 15px;
+                letter-spacing: -0.02em;
+            }
 
-    <div class="tabs">
-      <button onclick="openTab('dictionary')">Dictionary</button>
+            /* Main navigation */
+            .tabs {
+                display: flex;
+                width: min(1120px, 100%);
+                gap: 6px;
+                margin: 30px auto 24px;
+                padding: 6px;
+                border: 1px solid var(--line);
+                border-radius: 16px;
+                background: rgba(255, 255, 255, 0.78);
+                box-shadow: 0 8px 20px rgba(32, 45, 83, 0.035);
+                backdrop-filter: blur(12px);
+            }
 
-      <button onclick="openTab('add')">Add Vocabulary</button>
-    </div>
+            button {
+                border: 1px solid transparent;
+                border-radius: 10px;
+                padding: 10px 14px;
+                background: transparent;
+                color: var(--ink);
+                font: inherit;
+                font-size: 13px;
+                font-weight: 700;
+                line-height: 1.25;
+                cursor: pointer;
+                transition:
+                    background 0.18s ease,
+                    border-color 0.18s ease,
+                    box-shadow 0.18s ease,
+                    transform 0.18s ease;
+            }
 
-    <!-- Dictionary -->
+            button:hover {
+                transform: translateY(-1px);
+            }
+            button:active {
+                transform: translateY(0);
+            }
 
-    <div id="dictionary" class="tab-content active">
-      <h2>Vocabulary</h2>
+            .tabs button {
+                flex: 1 1 160px;
+                color: var(--muted);
+            }
 
-      <div id="dictionaryList">Loading...</div>
-    </div>
+            .tabs button:hover,
+            .tabs button.active {
+                background: var(--soft);
+                color: var(--primary);
+            }
 
-    <!-- Add -->
+            /* Both panels share a focused application surface */
+            .tab-content {
+                display: none;
+                width: min(1120px, 100%);
+                margin: auto;
+            }
 
-    <div id="add" class="tab-content">
-      <h2>Add Vocabulary</h2>
+            .tab-content.active {
+                display: block;
+                animation: panel-in 0.28s ease both;
+            }
 
-      <label>Word</label>
+            #dictionary,
+            #add {
+                border: 1px solid var(--line);
+                border-radius: 24px;
+                background: rgba(255, 255, 255, 0.91);
+                box-shadow: var(--shadow);
+            }
 
-      <input id="word" placeholder="interactive" />
+            #dictionary {
+                padding: clamp(22px, 4vw, 38px);
+            }
+            #add {
+                display: none;
+                max-width: 720px;
+                padding: clamp(22px, 4vw, 38px);
+            }
+            #add.active {
+                display: block;
+            }
 
-      <label>Meaning</label>
+            /* Dictionary results */
+            #dictionaryList {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+                min-height: 80px;
+            }
 
-      <input id="meaning" placeholder="tương tác" />
+            .card {
+                position: relative;
+                overflow: hidden;
+                min-height: 168px;
+                padding: 20px 20px 17px;
+                border: 1px solid var(--line);
+                border-radius: 17px;
+                background: var(--surface);
+                transition:
+                    border-color 0.2s ease,
+                    box-shadow 0.2s ease,
+                    transform 0.2s ease;
+            }
 
-      <label>Category</label>
+            .card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: var(--primary);
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
 
-      <select id="category">
-        <option>AI Evaluation</option>
+            .card:hover {
+                transform: translateY(-3px);
+                border-color: #cbd4fb;
+                box-shadow: 0 12px 24px rgba(43, 60, 120, 0.09);
+            }
+            .card:hover::before {
+                opacity: 1;
+            }
 
-        <option>Audio Quality</option>
+            .card h3 {
+                margin: 0 0 12px;
+                color: #17214a;
+                font-size: 19px;
+                font-weight: 800;
+                letter-spacing: -0.035em;
+            }
 
-        <option>Conversation</option>
+            .card p {
+                margin: 7px 0;
+                color: #414c67;
+                font-size: 13px;
+                line-height: 1.55;
+            }
 
-        <option>General</option>
-      </select>
+            .card strong {
+                color: var(--muted);
+                font-weight: 700;
+            }
 
-      <button onclick="getIPA()">Get IPA</button>
+            .card small {
+                display: inline-flex;
+                margin-top: 9px;
+                padding: 5px 8px;
+                border-radius: 6px;
+                background: #f2f5fb;
+                color: #63708e;
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: 0.045em;
+                line-height: 1.25;
+                text-transform: uppercase;
+            }
 
-      <label>IPA</label>
+            /* Entry form */
+            label {
+                display: block;
+                margin: 20px 0 7px;
+                color: #43506c;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.025em;
+            }
 
-      <input id="ipa" />
+            input,
+            textarea,
+            select {
+                display: block;
+                width: 100%;
+                min-height: 46px;
+                margin: 0;
+                padding: 11px 13px;
+                border: 1px solid #dfe5f0;
+                border-radius: 11px;
+                outline: none;
+                background: #fbfcff;
+                color: var(--ink);
+                font: inherit;
+                font-size: 14px;
+                transition:
+                    border-color 0.18s ease,
+                    background 0.18s ease,
+                    box-shadow 0.18s ease;
+            }
 
-      <h3>Preview Markdown</h3>
+            input::placeholder {
+                color: #a3acbd;
+            }
+            input:focus,
+            textarea:focus,
+            select:focus {
+                border-color: #8e9cf0;
+                background: #fff;
+                box-shadow: 0 0 0 4px rgba(64, 87, 214, 0.11);
+            }
 
-      <pre id="preview"></pre>
+            select {
+                cursor: pointer;
+            }
 
-      <button onclick="exportMarkdown()">Export vocabulary.md</button>
-    </div>
+            /* Function buttons in the form */
+            #add > button {
+                margin-top: 12px;
+                border-color: #d8defd;
+                background: var(--soft);
+                color: var(--primary);
+            }
 
-    <script>
-      // =======================
-      // CONFIG
-      // =======================
+            #add > button:hover {
+                border-color: var(--primary);
+                background: var(--primary);
+                color: #fff;
+                box-shadow: 0 8px 18px rgba(64, 87, 214, 0.2);
+            }
 
-      // thay link này bằng GitHub raw của bạn
+            pre {
+                overflow: auto;
+                margin: 0;
+                padding: 18px;
+                border: 1px solid #e1e6f4;
+                border-radius: 13px;
+                background: #1d2540;
+                color: #dbe5ff;
+                font-family: "DM Mono", Consolas, monospace;
+                font-size: 12px;
+                line-height: 1.7;
+                white-space: pre-wrap;
+            }
 
-      const VOCAB_URL =
-        "https://cdn.jsdelivr.net/gh/hunghobbit/s2s-vocabulary/vocabulary.md";
+            hr {
+                height: 1px;
+                margin: 34px 0 0;
+                border: 0;
+                background: var(--line);
+            }
 
-      let markdownData = "";
+            hr + h3 {
+                margin-top: 27px;
+            }
 
-      let newEntry = {};
+            #githubToken {
+                border-color: #d7defc;
+                background: #f9faff;
+            }
 
-      // =======================
-      // TAB
-      // =======================
+            #githubStatus {
+                min-height: 22px;
+                margin: 14px 0 0;
+                color: var(--success);
+                font-size: 13px;
+                font-weight: 700;
+            }
 
-      function openTab(id) {
-        document.querySelectorAll(".tab-content").forEach((e) => {
-          e.classList.remove("active");
-        });
+            @keyframes panel-in {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
 
-        document.getElementById(id).classList.add("active");
-      }
+            @media (max-width: 640px) {
+                body {
+                    padding: 38px 14px 44px;
+                }
+                body::before {
+                    left: 17px;
+                }
+                h1 {
+                    margin-top: 19px;
+                }
+                .tabs {
+                    margin-top: 23px;
+                }
+                #dictionaryList {
+                    grid-template-columns: 1fr;
+                }
+                #dictionary,
+                #add {
+                    border-radius: 18px;
+                }
+                .card {
+                    min-height: 0;
+                }
+            }
+        </style>
+    </head>
 
-      // =======================
-      // LOAD MD
-      // =======================
+    <body>
+        <h1>S2S Vocabulary CMS</h1>
 
-      async function loadVocabulary() {
-        try {
-          const res = await fetch(VOCAB_URL);
+        <div class="tabs">
+            <button class="active" data-tab="dictionary" onclick="openTab('dictionary')">Dictionary</button>
 
-          markdownData = await res.text();
+            <button data-tab="add" onclick="openTab('add')">Add Vocabulary</button>
+        </div>
 
-          renderDictionary();
-        } catch (err) {
-          document.getElementById("dictionaryList").innerHTML =
-            "Cannot load vocabulary.md";
-        }
-      }
+        <!-- Dictionary -->
 
-      // =======================
-      // SIMPLE MD PARSER
-      // =======================
+        <div id="dictionary" class="tab-content active">
+            <h2>Vocabulary</h2>
 
-      function renderDictionary() {
-        const box = document.getElementById("dictionaryList");
+            <div id="dictionaryList">Loading...</div>
+        </div>
 
-        const lines = markdownData.split("\n");
+        <!-- Add -->
 
-        let html = "";
+        <div id="add" class="tab-content">
+            <h2>Add Vocabulary</h2>
 
-        lines.forEach((line) => {
-          if (line.startsWith("- word:")) {
-            let word = line.replace("- word:", "").trim();
+            <label>Word</label>
 
-            html += `
+            <input id="word" placeholder="interactive" />
+
+            <label>Meaning</label>
+
+            <input id="meaning" placeholder="tương tác" />
+
+            <label>Category</label>
+
+            <select id="category">
+                <option value="Tính tự nhiên — Naturalness">Naturalness</option>
+
+                <option value="Tính tương tác — Engagement">Engagement</option>
+
+                <option
+                    value="Khả năng thích ứng với ngữ cảnh — Context Adaptation"
+                >
+                    Context Adaptation
+                </option>
+
+                <option value="Lỗi về cách diễn đạt — Response Problems">
+                    Response Problems
+                </option>
+
+                <option value="Giọng điệu & cảm xúc — Tone / Emotion">
+                    Tone / Emotion
+                </option>
+
+                <option value="Ngữ điệu & giọng nói — Voice / Prosody">
+                    Voice / Prosody
+                </option>
+
+                <option value="Phát âm & độ rõ — Speech">Speech</option>
+
+                <option value="Chất lượng âm thanh — Audio Quality">
+                    Audio Quality
+                </option>
+
+                <option value="Sự thay đổi theo thời gian — Across Turns">
+                    Across Turns
+                </option>
+
+                <option
+                    value="Hành vi thực tế & giới hạn khả năng — Real-world Capability"
+                >
+                    Real-world Capability
+                </option>
+            </select>
+
+            <button onclick="getIPA()">Get IPA</button>
+
+            <label>IPA</label>
+
+            <input id="ipa" />
+
+            <h3>Preview Markdown</h3>
+
+            <pre id="preview"></pre>
+
+            <!-- <button onclick="exportMarkdown()">Export vocabulary.md</button> -->
+            <hr />
+
+            <h3>Update GitHub</h3>
+
+            <label>GitHub Token</label>
+
+            <input
+                id="githubToken"
+                type="password"
+                placeholder="GitHub Personal Access Token"
+            />
+
+            <button onclick="updateGitHub()">Update GitHub</button>
+
+            <p id="githubStatus"></p>
+        </div>
+
+        <script>
+            // =======================
+            // CONFIG
+            // =======================
+
+            // thay link này bằng GitHub raw của bạn
+
+            const VOCAB_URL =
+                "https://cdn.jsdelivr.net/gh/hunghobbit/s2s-vocabulary/vocabulary.md";
+
+            const GITHUB_OWNER = "hunghobbit";
+            const GITHUB_REPO = "s2s-vocabulary";
+            const GITHUB_FILE = "vocabulary.md";
+            const GITHUB_BRANCH = "main";
+
+            let markdownData = "";
+
+            let newEntry = {};
+
+            // =======================
+            // TAB
+            // =======================
+
+            function openTab(id) {
+                document.querySelectorAll(".tab-content").forEach((e) => {
+                    e.classList.remove("active");
+                });
+
+                document.getElementById(id).classList.add("active");
+
+                document.querySelectorAll(".tabs button").forEach((button) => {
+                    button.classList.toggle("active", button.dataset.tab === id);
+                });
+            }
+
+            // =======================
+            // LOAD MD
+            // =======================
+
+            async function loadVocabulary() {
+                try {
+                    const res = await fetch(VOCAB_URL);
+
+                    markdownData = await res.text();
+
+                    renderDictionary();
+                } catch (err) {
+                    document.getElementById("dictionaryList").innerHTML =
+                        "Cannot load vocabulary.md";
+                }
+            }
+
+            // =======================
+            // SIMPLE MD PARSER
+            // =======================
+
+            function renderDictionary() {
+                const box = document.getElementById("dictionaryList");
+
+                const lines = markdownData.split(/\r?\n/);
+
+                let currentCategory = "";
+                let html = "";
+
+                for (const line of lines) {
+                    // Lấy tên category từ ## ...
+                    if (line.startsWith("## ")) {
+                        currentCategory = line.replace(/^##\s+/, "").trim();
+                        continue;
+                    }
+
+                    // Chỉ xử lý các dòng Markdown table
+                    if (!line.startsWith("|")) continue;
+
+                    // Bỏ dòng header
+                    if (line.includes("English") && line.includes("IPA"))
+                        continue;
+
+                    // Bỏ dòng ---
+                    if (/^\|\s*-+/.test(line)) continue;
+
+                    const cells = line
+                        .split("|")
+                        .slice(1, -1)
+                        .map((cell) => cell.trim());
+
+                    if (cells.length !== 3) continue;
+
+                    const [wordCell, ipa, meaning] = cells;
+
+                    const word = wordCell.replace(/\*\*/g, "").trim();
+
+                    if (!word) continue;
+
+                    html += `
                     <div class="card">
                       <h3>${word}</h3>
+
+                      <p>
+                        <strong>IPA:</strong> ${ipa}
+                      </p>
+
+                      <p>
+                        <strong>Meaning:</strong> ${meaning}
+                      </p>
+
+                      <small>
+                        ${currentCategory}
+                      </small>
                     </div>
-                    `;
-          }
-        });
+                  `;
+                }
 
-        box.innerHTML = html || "Empty";
-      }
+                box.innerHTML = html || "Empty";
+            }
 
-      // =======================
-      // DICTIONARY API
-      // =======================
+            // =======================
+            // DICTIONARY API
+            // =======================
 
-      async function getIPA() {
-        const word = document.getElementById("word").value.trim();
+            async function getIPA() {
+                const word = document.getElementById("word").value.trim();
 
-        if (!word) return;
+                if (!word) return;
 
-        try {
-          const res = await fetch(
-            `https://freedictionaryapi.com/api/v1/entries/en/${encodeURIComponent(word)}`,
-          );
+                try {
+                    // 1. Nguồn chính: FreeDictionaryAPI
+                    const res = await fetch(
+                        `https://freedictionaryapi.com/api/v1/entries/en/${encodeURIComponent(word)}`,
+                    );
 
-          if (!res.ok) {
-            throw new Error("Word not found");
-          }
+                    if (!res.ok) {
+                        throw new Error("Word not found");
+                    }
 
-          const data = await res.json();
+                    const data = await res.json();
 
-          const pronunciations =
-            data.entries
-              ?.flatMap((entry) => entry.pronunciations || [])
-              .filter((p) => p.type === "ipa") || [];
+                    const pronunciations =
+                        data.entries
+                            ?.flatMap((entry) => entry.pronunciations || [])
+                            .filter((p) => p.type === "ipa") || [];
 
-          // Ưu tiên IPA General American
-          const ipa =
-            pronunciations.find((p) => p.tags?.includes("General American"))
-              ?.text ||
-            pronunciations[0]?.text ||
-            "";
+                    // Ưu tiên IPA General American
+                    let ipa =
+                        pronunciations.find((p) =>
+                            p.tags?.includes("General American"),
+                        )?.text ||
+                        pronunciations[0]?.text ||
+                        "";
 
-          document.getElementById("ipa").value = ipa;
+                    // 2. Fallback: Dictionary API nếu FreeDictionaryAPI không có IPA
+                    if (!ipa) {
+                        console.log(
+                            "FreeDictionaryAPI: no IPA → trying fallback...",
+                        );
 
-          updatePreview();
-        } catch (e) {
-          document.getElementById("ipa").value = "";
-          alert("Cannot find IPA");
-        }
-      }
-      // =======================
-      // PREVIEW
-      // =======================
+                        const fallbackRes = await fetch(
+                            `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
+                        );
 
-      function updatePreview() {
-        const word = document.getElementById("word").value;
+                        if (fallbackRes.ok) {
+                            const fallbackData = await fallbackRes.json();
 
-        const meaning = document.getElementById("meaning").value;
+                            ipa =
+                                fallbackData
+                                    .flatMap((entry) => entry.phonetics || [])
+                                    .find((p) => p.text)?.text || "";
+                        }
+                    }
 
-        const ipa = document.getElementById("ipa").value;
+                    // DEBUG
+                    console.log("WORD:", word);
+                    console.log("FREE DICTIONARY DATA:", data);
+                    console.log("FREE DICTIONARY IPA:", pronunciations);
+                    console.log("FINAL IPA:", ipa);
 
-        const category = document.getElementById("category").value;
+                    document.getElementById("ipa").value = ipa;
 
-        document.getElementById("preview").textContent = `
+                    updatePreview();
+
+                    if (!ipa) {
+                        alert("Cannot find IPA");
+                    }
+                } catch (e) {
+                    console.error("IPA ERROR:", e);
+
+                    document.getElementById("ipa").value = "";
+
+                    alert("Cannot find IPA");
+                }
+            }
+
+            // =======================
+            // PREVIEW
+            // =======================
+
+            function updatePreview() {
+                const word = document.getElementById("word").value.trim();
+                const meaning = document.getElementById("meaning").value.trim();
+                const ipa = document.getElementById("ipa").value.trim();
+                const category = document.getElementById("category").value;
+
+                document.getElementById("preview").textContent = `
 ## ${category}
 
-- word: ${word}
-  meaning: ${meaning}
-  ipa: ${ipa}
-`;
-      }
+| English | IPA | Nghĩa tiếng Việt |
+|---|---|---|
+| **${word}** | ${ipa} | ${meaning} |
+`.trim();
+            }
 
-      document.querySelectorAll("input,select").forEach((el) => {
-        el.addEventListener("input", updatePreview);
-      });
+            // =======================
+            // EXPORT
+            // =======================
 
-      // =======================
-      // EXPORT
-      // =======================
+            function exportMarkdown() {
+                const word = document.getElementById("word").value.trim();
+                const meaning = document.getElementById("meaning").value.trim();
+                const ipa = document.getElementById("ipa").value.trim();
+                const category = document.getElementById("category").value;
 
-      function exportMarkdown() {
-        const content =
-          markdownData +
-          "\n\n" +
-          document.getElementById("preview").textContent;
+                if (!word || !meaning) {
+                    alert("Please enter word and meaning.");
+                    return;
+                }
 
-        const blob = new Blob([content], {
-          type: "text/markdown",
-        });
+                const lines = markdownData.split(/\r?\n/);
 
-        const url = URL.createObjectURL(blob);
+                let categoryIndex = -1;
+                let tableEndIndex = -1;
 
-        const a = document.createElement("a");
+                // Tìm category
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].trim() === `## ${category}`) {
+                        categoryIndex = i;
+                        break;
+                    }
+                }
 
-        a.href = url;
+                // Category chưa tồn tại
+                if (categoryIndex === -1) {
+                    lines.push(
+                        "",
+                        `## ${category}`,
+                        "",
+                        "| English | IPA | Nghĩa tiếng Việt |",
+                        "|---|---|---|",
+                        `| **${word}** | ${ipa} | ${meaning} |`,
+                    );
+                }
 
-        a.download = "vocabulary.md";
+                // Category đã tồn tại
+                else {
+                    // Tìm dòng cuối của bảng
+                    for (let i = categoryIndex + 1; i < lines.length; i++) {
+                        if (lines[i].startsWith("## ")) {
+                            break;
+                        }
 
-        a.click();
+                        if (lines[i].startsWith("|")) {
+                            tableEndIndex = i;
+                        }
+                    }
 
-        URL.revokeObjectURL(url);
-      }
+                    if (tableEndIndex === -1) {
+                        alert("Table not found.");
+                        return;
+                    }
 
-      loadVocabulary();
-    </script>
-  </body>
+                    // Thêm từ vào cuối bảng
+                    lines.splice(
+                        tableEndIndex + 1,
+                        0,
+                        `| **${word}** | ${ipa} | ${meaning} |`,
+                    );
+                }
+
+                // Tạo file Markdown
+                const content = lines.join("\n");
+
+                const blob = new Blob([content], {
+                    type: "text/markdown",
+                });
+
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+
+                a.href = url;
+                a.download = "vocabulary.md";
+                a.click();
+
+                URL.revokeObjectURL(url);
+
+                // xóa form sau khi xuất file
+                document.getElementById("word").value = "";
+                document.getElementById("meaning").value = "";
+                document.getElementById("ipa").value = "";
+
+                updatePreview();
+            }
+            // =======================
+            // UPDATE GITHUB
+            // =======================
+
+            async function updateGitHub() {
+                const word = document.getElementById("word").value.trim();
+                const meaning = document.getElementById("meaning").value.trim();
+                const ipa = document.getElementById("ipa").value.trim();
+                const category = document.getElementById("category").value;
+
+                const token = document
+                    .getElementById("githubToken")
+                    .value.trim();
+
+                const status = document.getElementById("githubStatus");
+
+                if (!word || !meaning) {
+                    alert("Please enter word and meaning.");
+                    return;
+                }
+
+                if (!token) {
+                    alert("Please enter GitHub Token.");
+                    return;
+                }
+
+                try {
+                    status.textContent = "Updating GitHub...";
+
+                    // =======================
+                    // 1. Tạo vocabulary mới
+                    // =======================
+
+                    const lines = markdownData.split(/\r?\n/);
+
+                    let categoryIndex = -1;
+                    let tableEndIndex = -1;
+
+                    // Tìm category
+                    for (let i = 0; i < lines.length; i++) {
+                        if (lines[i].trim() === `## ${category}`) {
+                            categoryIndex = i;
+                            break;
+                        }
+                    }
+
+                    // Category chưa tồn tại
+                    if (categoryIndex === -1) {
+                        lines.push(
+                            "",
+                            `## ${category}`,
+                            "",
+                            "| English | IPA | Nghĩa tiếng Việt |",
+                            "|---|---|---|",
+                            `| **${word}** | ${ipa} | ${meaning} |`,
+                        );
+                    }
+
+                    // Category đã tồn tại
+                    else {
+                        for (let i = categoryIndex + 1; i < lines.length; i++) {
+                            if (lines[i].startsWith("## ")) {
+                                break;
+                            }
+
+                            if (lines[i].startsWith("|")) {
+                                tableEndIndex = i;
+                            }
+                        }
+
+                        if (tableEndIndex === -1) {
+                            throw new Error("Table not found.");
+                        }
+
+                        lines.splice(
+                            tableEndIndex + 1,
+                            0,
+                            `| **${word}** | ${ipa} | ${meaning} |`,
+                        );
+                    }
+
+                    const content = lines.join("\n");
+
+                    // =======================
+                    // 2. Lấy SHA của file
+                    // =======================
+
+                    const fileUrl =
+                        `https://api.github.com/repos/` +
+                        `${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}` +
+                        `?ref=${GITHUB_BRANCH}`;
+
+                    const getFileRes = await fetch(fileUrl, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: "application/vnd.github+json",
+                        },
+                    });
+
+                    if (!getFileRes.ok) {
+                        throw new Error(
+                            `Cannot get GitHub file (${getFileRes.status})`,
+                        );
+                    }
+
+                    const fileData = await getFileRes.json();
+
+                    // =======================
+                    // 3. Encode Markdown
+                    // =======================
+
+                    const encodedContent = btoa(
+                        unescape(encodeURIComponent(content)),
+                    );
+
+                    // =======================
+                    // 4. Update GitHub
+                    // =======================
+
+                    const updateRes = await fetch(
+                        `https://api.github.com/repos/` +
+                            `${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                Accept: "application/vnd.github+json",
+                                "Content-Type": "application/json",
+                            },
+
+                            body: JSON.stringify({
+                                message: `Add vocabulary: ${word}`,
+                                content: encodedContent,
+                                sha: fileData.sha,
+                                branch: GITHUB_BRANCH,
+                            }),
+                        },
+                    );
+
+                    if (!updateRes.ok) {
+                        const errorData = await updateRes.json();
+
+                        throw new Error(
+                            errorData.message || "GitHub update failed",
+                        );
+                    }
+
+                    // =======================
+                    // 5. Thành công
+                    // =======================
+
+                    markdownData = content;
+
+                    renderDictionary();
+
+                    status.textContent = `✓ "${word}" updated to GitHub successfully.`;
+
+                    // Xóa form
+                    document.getElementById("word").value = "";
+                    document.getElementById("meaning").value = "";
+                    document.getElementById("ipa").value = "";
+
+                    updatePreview();
+                } catch (error) {
+                    console.error("GITHUB ERROR:", error);
+
+                    status.textContent = "";
+
+                    alert(`GitHub update failed: ${error.message}`);
+                }
+            }
+            loadVocabulary();
+        </script>
+        <script src="s2s-flashcards-addon.js"></script>
+    </body>
 </html>
