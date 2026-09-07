@@ -3,624 +3,24 @@
     <head>
         <meta charset="UTF-8" />
         <title>S2S Vocabulary CMS</title>
-
-        <style>
-            @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
-
-            :root {
-                --ink: #182033;
-                --muted: #68728a;
-                --line: #e3e8f2;
-                --canvas: #f4f6fb;
-                --surface: #ffffff;
-                --soft: #eef1ff;
-                --primary: #4057d6;
-                --primary-dark: #3146b9;
-                --success: #198754;
-                --shadow: 0 18px 50px rgba(25, 38, 75, 0.08);
-            }
-
-            * {
-                box-sizing: border-box;
-            }
-
-            body {
-                min-height: 100vh;
-                margin: 0;
-                padding: 48px 24px 72px;
-                background:
-                    radial-gradient(
-                        circle at 5% 3%,
-                        #e8edff 0,
-                        transparent 28rem
-                    ),
-                    radial-gradient(
-                        circle at 96% 18%,
-                        #e5f8f4 0,
-                        transparent 24rem
-                    ),
-                    var(--canvas);
-                color: var(--ink);
-                font-family:
-                    Manrope,
-                    Inter,
-                    system-ui,
-                    -apple-system,
-                    BlinkMacSystemFont,
-                    "Segoe UI",
-                    sans-serif;
-            }
-
-            body::before {
-                content: "S2S / VOCABULARY";
-                position: fixed;
-                top: 22px;
-                left: 28px;
-                color: #8893b4;
-                font-family: "DM Mono", monospace;
-                font-size: 10px;
-                font-weight: 500;
-                letter-spacing: 0.14em;
-                pointer-events: none;
-            }
-
-            h1,
-            h2,
-            h3,
-            p {
-                margin-top: 0;
-            }
-
-            h1 {
-                width: min(1120px, 100%);
-                margin: 20px auto 8px;
-                font-size: clamp(30px, 4vw, 44px);
-                font-weight: 800;
-                letter-spacing: -0.055em;
-                line-height: 1.08;
-            }
-
-            h1::after {
-                content: "Manage your vocabulary library";
-                display: block;
-                margin-top: 10px;
-                color: var(--muted);
-                font-size: 14px;
-                font-weight: 500;
-                letter-spacing: 0;
-            }
-
-            h2 {
-                margin-bottom: 22px;
-                font-size: 20px;
-                letter-spacing: -0.03em;
-            }
-
-            h3 {
-                margin-bottom: 14px;
-                font-size: 15px;
-                letter-spacing: -0.02em;
-            }
-
-            /* Main navigation */
-            .tabs {
-                display: flex;
-                width: min(1120px, 100%);
-                gap: 6px;
-                margin: 30px auto 24px;
-                padding: 6px;
-                border: 1px solid var(--line);
-                border-radius: 16px;
-                background: rgba(255, 255, 255, 0.78);
-                box-shadow: 0 8px 20px rgba(32, 45, 83, 0.035);
-                backdrop-filter: blur(12px);
-            }
-
-            button {
-                border: 1px solid transparent;
-                border-radius: 10px;
-                padding: 10px 14px;
-                background: transparent;
-                color: var(--ink);
-                font: inherit;
-                font-size: 13px;
-                font-weight: 700;
-                line-height: 1.25;
-                cursor: pointer;
-                transition:
-                    background 0.18s ease,
-                    border-color 0.18s ease,
-                    box-shadow 0.18s ease,
-                    transform 0.18s ease;
-            }
-
-            button:hover {
-                transform: translateY(-1px);
-            }
-            button:active {
-                transform: translateY(0);
-            }
-
-            .tabs button {
-                flex: 1 1 160px;
-                color: var(--muted);
-            }
-
-            .tabs button:hover,
-            .tabs button.active {
-                background: var(--soft);
-                color: var(--primary);
-            }
-
-            /* Both panels share a focused application surface */
-            .tab-content {
-                display: none;
-                width: min(1120px, 100%);
-                margin: auto;
-            }
-
-            .tab-content.active {
-                display: block;
-                animation: panel-in 0.28s ease both;
-            }
-
-            #dictionary,
-            #add {
-                border: 1px solid var(--line);
-                border-radius: 24px;
-                background: rgba(255, 255, 255, 0.91);
-                box-shadow: var(--shadow);
-            }
-
-            #dictionary {
-                padding: clamp(22px, 4vw, 38px);
-            }
-            #add {
-                display: none;
-                max-width: 720px;
-                padding: clamp(22px, 4vw, 38px);
-            }
-            #add.active {
-                display: block;
-            }
-
-            /* Dictionary results */
-            #dictionaryList {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 12px;
-                min-height: 80px;
-            }
-
-            .card {
-                position: relative;
-                overflow: hidden;
-                min-height: 168px;
-                padding: 20px 20px 17px;
-                border: 1px solid var(--line);
-                border-radius: 17px;
-                background: var(--surface);
-                transition:
-                    border-color 0.2s ease,
-                    box-shadow 0.2s ease,
-                    transform 0.2s ease;
-            }
-
-            .card::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 4px;
-                height: 100%;
-                background: var(--primary);
-                opacity: 0;
-                transition: opacity 0.2s ease;
-            }
-
-            .card:hover {
-                transform: translateY(-3px);
-                border-color: #cbd4fb;
-                box-shadow: 0 12px 24px rgba(43, 60, 120, 0.09);
-            }
-            .card:hover::before {
-                opacity: 1;
-            }
-
-            .card h3 {
-                margin: 0 0 12px;
-                color: #17214a;
-                font-size: 19px;
-                font-weight: 800;
-                letter-spacing: -0.035em;
-            }
-
-            .card p {
-                margin: 7px 0;
-                color: #414c67;
-                font-size: 13px;
-                line-height: 1.55;
-            }
-
-            .card strong {
-                color: var(--muted);
-                font-weight: 700;
-            }
-
-            .card small {
-                display: inline-flex;
-                margin-top: 9px;
-                padding: 5px 8px;
-                border-radius: 6px;
-                background: #f2f5fb;
-                color: #63708e;
-                font-size: 10px;
-                font-weight: 800;
-                letter-spacing: 0.045em;
-                line-height: 1.25;
-                text-transform: uppercase;
-            }
-
-            /* Entry form */
-            label {
-                display: block;
-                margin: 20px 0 7px;
-                color: #43506c;
-                font-size: 12px;
-                font-weight: 800;
-                letter-spacing: 0.025em;
-            }
-
-            input,
-            textarea,
-            select {
-                display: block;
-                width: 100%;
-                min-height: 46px;
-                margin: 0;
-                padding: 11px 13px;
-                border: 1px solid #dfe5f0;
-                border-radius: 11px;
-                outline: none;
-                background: #fbfcff;
-                color: var(--ink);
-                font: inherit;
-                font-size: 14px;
-                transition:
-                    border-color 0.18s ease,
-                    background 0.18s ease,
-                    box-shadow 0.18s ease;
-            }
-
-            input::placeholder {
-                color: #a3acbd;
-            }
-            input:focus,
-            textarea:focus,
-            select:focus {
-                border-color: #8e9cf0;
-                background: #fff;
-                box-shadow: 0 0 0 4px rgba(64, 87, 214, 0.11);
-            }
-
-            select {
-                cursor: pointer;
-            }
-
-            /* Function buttons in the form */
-            #add > button {
-                margin-top: 12px;
-                border-color: #d8defd;
-                background: var(--soft);
-                color: var(--primary);
-            }
-
-            #add > button:hover {
-                border-color: var(--primary);
-                background: var(--primary);
-                color: #fff;
-                box-shadow: 0 8px 18px rgba(64, 87, 214, 0.2);
-            }
-
-            pre {
-                overflow: auto;
-                margin: 0;
-                padding: 18px;
-                border: 1px solid #e1e6f4;
-                border-radius: 13px;
-                background: #1d2540;
-                color: #dbe5ff;
-                font-family: "DM Mono", Consolas, monospace;
-                font-size: 12px;
-                line-height: 1.7;
-                white-space: pre-wrap;
-            }
-
-            hr {
-                height: 1px;
-                margin: 34px 0 0;
-                border: 0;
-                background: var(--line);
-            }
-
-            hr + h3 {
-                margin-top: 27px;
-            }
-
-            #githubToken {
-                border-color: #d7defc;
-                background: #f9faff;
-            }
-
-            #githubStatus {
-                min-height: 22px;
-                margin: 14px 0 0;
-                color: var(--success);
-                font-size: 13px;
-                font-weight: 700;
-            }
-
-            @keyframes panel-in {
-                from {
-                    opacity: 0;
-                    transform: translateY(8px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            @media (max-width: 768px) {
-                body {
-                    padding: 20px 12px 32px;
-                }
-
-                body::before {
-                    left: 12px;
-                    top: 10px;
-                    font-size: 10px;
-                }
-
-                h1 {
-                    margin-top: 28px;
-                    font-size: 34px;
-                    letter-spacing: -0.03em;
-                    line-height: 1.12;
-                }
-
-                h1::after {
-                    margin-top: 10px;
-                    font-size: 16px;
-                    line-height: 1.4;
-                }
-
-                h2 {
-                    font-size: 30px;
-                    margin-bottom: 18px;
-                }
-
-                h3 {
-                    font-size: 22px;
-                }
-
-                /* Navigation */
-                .tabs {
-                    width: 100%;
-                    margin: 18px auto 16px;
-                    padding: 6px;
-                    gap: 6px;
-                    border-radius: 14px;
-                }
-
-                .tabs button {
-                    flex: 1;
-                    min-width: 0;
-                    min-height: 52px;
-                    padding: 12px 10px;
-                    font-size: 17px;
-                    font-weight: 700;
-                    border-radius: 10px;
-                    white-space: nowrap;
-                }
-
-                /* Main panels */
-                .tab-content {
-                    width: 100%;
-                }
-
-                #dictionary,
-                #add {
-                    padding: 18px 14px;
-                    border-radius: 16px;
-                    max-width: 100%;
-                }
-
-                /* Dictionary */
-                #dictionaryList {
-                    grid-template-columns: 1fr !important;
-                    gap: 12px;
-                }
-
-                .card {
-                    padding: 16px;
-                    border-radius: 14px;
-                    min-height: 0;
-                }
-
-                .card h3 {
-                    font-size: 30px;
-                    margin-bottom: 10px;
-                }
-
-                .card p {
-                    font-size: 21px;
-                    line-height: 1.55;
-                    margin: 6px 0;
-                }
-
-                .card small {
-                    margin-top: 10px;
-                    font-size: 15px;
-                    padding: 6px 10px;
-                }
-
-                label {
-                    margin: 18px 0 8px;
-                    font-size: 18px;
-                    letter-spacing: 0.01em;
-                }
-
-                /* Inputs */
-                input,
-                textarea,
-                select {
-                    min-height: 56px;
-                    padding: 14px 16px;
-                    font-size: 18px;
-                    border-radius: 12px;
-                }
-
-                /* Buttons */
-                button {
-                    min-height: 52px;
-                    padding: 12px 14px;
-                    font-size: 17px;
-                    border-radius: 10px;
-                }
-
-                #add > button {
-                    margin-top: 14px;
-                }
-
-                pre {
-                    font-size: 14px;
-                    line-height: 1.6;
-                    padding: 14px;
-                }
-
-                #githubStatus {
-                    font-size: 15px;
-                }
-            }
-
-            @media (max-width: 420px) {
-                body {
-                    padding: 14px 10px 24px;
-                }
-
-                body::before {
-                    top: 8px;
-                    left: 10px;
-                    font-size: 9px;
-                    letter-spacing: 0.1em;
-                }
-
-                h1 {
-                    margin-top: 24px;
-                    font-size: 30px;
-                    line-height: 1.14;
-                    letter-spacing: -0.02em;
-                }
-
-                h1::after {
-                    font-size: 14px;
-                    margin-top: 8px;
-                }
-
-                h2 {
-                    font-size: 26px;
-                    margin-bottom: 14px;
-                }
-
-                h3 {
-                    font-size: 20px;
-                }
-
-                .tabs {
-                    margin: 14px auto 12px;
-                    padding: 4px;
-                    gap: 4px;
-                    border-radius: 12px;
-                }
-
-                .tabs button {
-                    min-height: 48px;
-                    padding: 10px 8px;
-                    font-size: 15px;
-                    border-radius: 9px;
-                }
-
-                #dictionary,
-                #add {
-                    padding: 14px 12px;
-                    border-radius: 14px;
-                }
-
-                #dictionaryList {
-                    gap: 10px;
-                }
-
-                .card {
-                    padding: 14px;
-                    border-radius: 12px;
-                }
-
-                .card h3 {
-                    font-size: 26px;
-                    margin-bottom: 8px;
-                }
-
-                .card p {
-                    font-size: 18px;
-                    line-height: 1.5;
-                }
-
-                .card small {
-                    font-size: 13px;
-                    padding: 5px 8px;
-                }
-
-                label {
-                    margin: 14px 0 7px;
-                    font-size: 16px;
-                }
-
-                input,
-                textarea,
-                select {
-                    min-height: 52px;
-                    padding: 12px 14px;
-                    font-size: 16px;
-                    border-radius: 10px;
-                }
-
-                button {
-                    min-height: 48px;
-                    padding: 10px 12px;
-                    font-size: 15px;
-                    border-radius: 9px;
-                }
-
-                pre {
-                    font-size: 13px;
-                    padding: 12px;
-                }
-
-                #githubStatus {
-                    font-size: 14px;
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="styles.css" />
     </head>
 
     <body>
         <h1>S2S Vocabulary CMS</h1>
 
         <div class="tabs">
-            <button class="active" data-tab="dictionary" onclick="openTab('dictionary')">Dictionary</button>
+            <button
+                class="active"
+                data-tab="dictionary"
+                onclick="openTab('dictionary')"
+            >
+                Dictionary
+            </button>
 
-            <button data-tab="add" onclick="openTab('add')">Add Vocabulary</button>
+            <button data-tab="add" onclick="openTab('add')">
+                Add Vocabulary
+            </button>
         </div>
 
         <!-- Dictionary -->
@@ -745,7 +145,10 @@
                 document.getElementById(id).classList.add("active");
 
                 document.querySelectorAll(".tabs button").forEach((button) => {
-                    button.classList.toggle("active", button.dataset.tab === id);
+                    button.classList.toggle(
+                        "active",
+                        button.dataset.tab === id,
+                    );
                 });
             }
 
@@ -1159,39 +562,37 @@
                         const errorData = await updateRes.json();
 
                         throw new Error(
-                            errorData.message ||
-                                `GitHub update failed (${updateRes.status})`,
+                            errorData.message || "GitHub update failed",
                         );
                     }
 
-                    status.textContent =
-                        "✅ Updated vocabulary.md to GitHub successfully!";
+                    // =======================
+                    // 5. Thành công
+                    // =======================
 
-                    // cập nhật markdownData local
                     markdownData = content;
 
-                    // refresh dictionary UI
                     renderDictionary();
 
-                    // clear form
+                    status.textContent = `✓ "${word}" updated to GitHub successfully.`;
+
+                    // Xóa form
                     document.getElementById("word").value = "";
                     document.getElementById("meaning").value = "";
                     document.getElementById("ipa").value = "";
-                    document.getElementById("preview").textContent = "";
-                } catch (e) {
-                    console.error(e);
 
-                    status.textContent = `❌ ${e.message}`;
+                    updatePreview();
+                } catch (error) {
+                    console.error("GITHUB ERROR:", error);
+
+                    status.textContent = "";
+
+                    alert(`GitHub update failed: ${error.message}`);
                 }
             }
-
-            ["word", "meaning", "ipa", "category"].forEach((id) => {
-                document
-                    .getElementById(id)
-                    .addEventListener("input", updatePreview);
-            });
-
             loadVocabulary();
         </script>
+        <script src="s2s-flashcards-addon.js"></script>
+        <script src="s2s-quiz-addon.js"></script>
     </body>
 </html>
