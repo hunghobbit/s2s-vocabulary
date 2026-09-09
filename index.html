@@ -13,12 +13,12 @@
             <button
                 class="active"
                 data-tab="dictionary"
-                onclick="openTab('dictionary')"
+                onclick="scrollToTab('dictionary')"
             >
                 Dictionary
             </button>
 
-            <button data-tab="add" onclick="openTab('add')">
+            <button data-tab="add" onclick="scrollToTab('add')">
                 Add Vocabulary
             </button>
         </div>
@@ -36,83 +36,83 @@
         <div id="add" class="tab-content">
             <h2>Add Vocabulary</h2>
 
-            <label>Word</label>
+                <label>Word</label>
 
-            <input id="word" placeholder="interactive" />
+                <input id="word" placeholder="interactive" />
 
-            <label>Meaning</label>
+                <label>Meaning</label>
 
-            <input id="meaning" placeholder="tương tác" />
+                <input id="meaning" placeholder="tương tác" />
 
-            <label>Category</label>
+                <label>Category</label>
 
-            <select id="category">
-                <option value="Tính tự nhiên — Naturalness">Naturalness</option>
+                <select id="category">
+                    <option value="Tính tự nhiên — Naturalness">Naturalness</option>
 
-                <option value="Tính tương tác — Engagement">Engagement</option>
+                    <option value="Tính tương tác — Engagement">Engagement</option>
 
-                <option
-                    value="Khả năng thích ứng với ngữ cảnh — Context Adaptation"
-                >
-                    Context Adaptation
-                </option>
+                    <option
+                        value="Khả năng thích ứng với ngữ cảnh — Context Adaptation"
+                    >
+                        Context Adaptation
+                    </option>
 
-                <option value="Lỗi về cách diễn đạt — Response Problems">
-                    Response Problems
-                </option>
+                    <option value="Lỗi về cách diễn đạt — Response Problems">
+                        Response Problems
+                    </option>
 
-                <option value="Giọng điệu & cảm xúc — Tone / Emotion">
-                    Tone / Emotion
-                </option>
+                    <option value="Giọng điệu & cảm xúc — Tone / Emotion">
+                        Tone / Emotion
+                    </option>
 
-                <option value="Ngữ điệu & giọng nói — Voice / Prosody">
-                    Voice / Prosody
-                </option>
+                    <option value="Ngữ điệu & giọng nói — Voice / Prosody">
+                        Voice / Prosody
+                    </option>
 
-                <option value="Phát âm & độ rõ — Speech">Speech</option>
+                    <option value="Phát âm & độ rõ — Speech">Speech</option>
 
-                <option value="Chất lượng âm thanh — Audio Quality">
-                    Audio Quality
-                </option>
+                    <option value="Chất lượng âm thanh — Audio Quality">
+                        Audio Quality
+                    </option>
 
-                <option value="Sự thay đổi theo thời gian — Across Turns">
-                    Across Turns
-                </option>
+                    <option value="Sự thay đổi theo thời gian — Across Turns">
+                        Across Turns
+                    </option>
 
-                <option
-                    value="Hành vi thực tế & giới hạn khả năng — Real-world Capability"
-                >
-                    Real-world Capability
-                </option>
-            </select>
+                    <option
+                        value="Hành vi thực tế & giới hạn khả năng — Real-world Capability"
+                    >
+                        Real-world Capability
+                    </option>
+                </select>
 
-            <button onclick="getIPA()">Get IPA</button>
+                <button onclick="getIPA()">Get IPA</button>
 
-            <label>IPA</label>
+                <label>IPA</label>
 
-            <input id="ipa" />
+                <input id="ipa" />
 
-            <h3>Preview Markdown</h3>
+                <h3>Preview Markdown</h3>
 
-            <pre id="preview"></pre>
+                <pre id="preview"></pre>
 
-            <!-- <button onclick="exportMarkdown()">Export vocabulary.md</button> -->
-            <hr />
+                <!-- <button onclick="exportMarkdown()">Export vocabulary.md</button> -->
+                <hr />
 
-            <h3>Update GitHub</h3>
+                <h3>Update GitHub</h3>
 
-            <label>GitHub Token</label>
+                <label>GitHub Token</label>
 
-            <input
-                id="githubToken"
-                type="password"
-                placeholder="GitHub Personal Access Token"
-            />
+                <input
+                    id="githubToken"
+                    type="password"
+                    placeholder="GitHub Personal Access Token"
+                />
 
-            <button onclick="updateGitHub()">Update GitHub</button>
+                <button onclick="updateGitHub()">Update GitHub</button>
 
-            <p id="githubStatus"></p>
-        </div>
+                <p id="githubStatus"></p>
+            </div>
 
         <script>
             // =======================
@@ -134,7 +134,7 @@
             let newEntry = {};
 
             // =======================
-            // TAB
+            // TAB & CAROUSEL
             // =======================
 
             function openTab(id) {
@@ -150,6 +150,85 @@
                         button.dataset.tab === id,
                     );
                 });
+
+                // Scroll tabs container to the button
+                const button = document.querySelector(`.tabs button[data-tab="${id}"]`);
+                const tabs = document.querySelector(".tabs");
+                if (button && tabs) {
+                    const scrollLeft = button.offsetLeft - tabs.offsetLeft;
+                    tabs.scrollTo({ left: scrollLeft, behavior: "smooth" });
+                }
+            }
+
+            function scrollToTab(id) {
+                const button = document.querySelector(`.tabs button[data-tab="${id}"]`);
+                const tabs = document.querySelector(".tabs");
+                if (!button || !tabs) return;
+
+                // Scroll to the button
+                const scrollLeft = button.offsetLeft - tabs.offsetLeft;
+                tabs.scrollTo({ left: scrollLeft, behavior: "smooth" });
+            }
+
+            // =======================
+            // CAROUSEL SNAP DETECTION
+            // =======================
+
+            function initializeCarousel() {
+                const tabs = document.querySelector(".tabs");
+                if (!tabs) return;
+
+                // Wheel-to-scroll conversion
+                tabs.addEventListener("wheel", (event) => {
+                    event.preventDefault();
+                    tabs.scrollLeft += event.deltaY;
+                });
+
+                // Intersection Observer to detect snapped button
+                const observerOptions = {
+                    root: tabs,
+                    threshold: 0.5,
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            const tabId = entry.target.dataset.tab;
+                            if (tabId) {
+                                // Update active tab button
+                                tabs.querySelectorAll("button").forEach((btn) => {
+                                    btn.classList.toggle(
+                                        "active",
+                                        btn === entry.target,
+                                    );
+                                });
+                                // Update active tab content
+                                document.querySelectorAll(".tab-content").forEach((content) => {
+                                    content.classList.toggle(
+                                        "active",
+                                        content.id === tabId,
+                                    );
+                                });
+                            }
+                        }
+                    });
+                }, observerOptions);
+
+                // Observe existing buttons
+                tabs.querySelectorAll("button").forEach((btn) => observer.observe(btn));
+
+                // MutationObserver to watch for dynamically added buttons (e.g., Flashcards, Quiz)
+                const mutationObserver = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1 && node.tagName === "BUTTON") {
+                                observer.observe(node);
+                            }
+                        });
+                    });
+                });
+
+                mutationObserver.observe(tabs, { childList: true });
             }
 
             // =======================
@@ -590,6 +669,9 @@
                     alert(`GitHub update failed: ${error.message}`);
                 }
             }
+            // Initialize carousel with snap detection
+            initializeCarousel();
+            
             loadVocabulary();
         </script>
         <script src="s2s-flashcards-addon.js"></script>

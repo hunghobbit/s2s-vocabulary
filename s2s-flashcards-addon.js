@@ -3,7 +3,7 @@
 (() => {
   const style = document.createElement('style');
   style.textContent = `
-    #flashcards { max-width:760px; padding:clamp(22px,4vw,38px); border:1px solid var(--line); border-radius:24px; background:rgba(255,255,255,.91); box-shadow:var(--shadow); }
+    #flashcards { max-width:760px; margin: 0 auto; padding:clamp(22px,4vw,38px); border:1px solid var(--line); border-radius:24px; background:rgba(255,255,255,.91); box-shadow:var(--shadow); }
     .flash-head { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:20px; }
     .flash-head h2 { margin:5px 0 0; font-size:27px; }.flash-label { color:var(--primary); font-size:11px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
     .flash-count { color:var(--muted); font-size:12px; font-weight:800; white-space:nowrap; }.flash-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px; }
@@ -15,7 +15,7 @@
   `;
   document.head.append(style);
 
-  document.querySelector('.tabs').insertAdjacentHTML('beforeend', '<button data-tab="flashcards" onclick="openTab(\'flashcards\')">Flashcards</button>');
+  document.querySelector('.tabs').insertAdjacentHTML('beforeend', '<button data-tab="flashcards" onclick="scrollToTab(\'flashcards\')">Flashcards</button>');
   document.body.querySelector('#add').insertAdjacentHTML('afterend', `
     <div id="flashcards" class="tab-content">
       <div class="flash-head"><div><div class="flash-label">S2S learning mode</div><h2>Flashcards</h2></div><div id="fcCount" class="flash-count">Đang tải…</div></div>
